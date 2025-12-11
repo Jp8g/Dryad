@@ -75,4 +75,5 @@ void DryadCloseAudioStream(DryadAudioStream* audioStream) {
     pthread_join(audioStream->thread, NULL);
 
     snd_pcm_close(audioStream->pcm);
+    free(audioStream);
 }

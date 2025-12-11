@@ -20,19 +20,19 @@ typedef snd_pcm_t DryadPCM;
 struct DryadAudioStream {
     DryadPCM* pcm;
     DryadWriteCallback writeCallback;
-    uint32_t channels;
-    uint32_t sampleRate;
     uint64_t bufferSize;
     uint64_t periodSize;
     void* userData;
+    pthread_t thread;
+
+    uint32_t channels;
+    uint32_t sampleRate;
 
     #ifdef __cplusplus
     std::atomic<bool> active;
     #else
     _Atomic bool active;
     #endif
-    
-    pthread_t thread;
 };
 
 #ifdef __cplusplus
