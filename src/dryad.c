@@ -1,7 +1,7 @@
-#include "../include/dryad.h"
+#include <dryad/dryad.h>
 
-void* audioLoop(void* args) {
-    DryadAudioStream* audioStream = (DryadAudioStream*)args;
+void* dry_audio_loop(void* args) {
+    dry_audio_stream* audioStream = (dry_audio_stream*)args;
     float* outBuffer = malloc(audioStream->periodSize * audioStream->channels * sizeof(float));
 
     while (atomic_load(&audioStream->active)) {
@@ -12,7 +12,7 @@ void* audioLoop(void* args) {
             continue;
         }
 
-        if (avail >= audioStream->periodSize) {
+        if (avail >= 0 && (uint64_t)avail >= audioStream->periodSize) {
             for (uint32_t i = 0; i < audioStream->periodSize * audioStream->channels; i++) outBuffer[i] = 0.0f;
 
             audioStream->writeCallback(outBuffer, audioStream);
@@ -34,10 +34,10 @@ void* audioLoop(void* args) {
     return NULL;
 }
 
-DryadAudioStream* DryadCreateAudioStream(DryadWriteCallback writeCallback, uint32_t channels, uint32_t sampleRate, uint64_t bufferSize, uint64_t periodSize, void* userData) {
+dry_audio_stream* dry_create_audio_stream(dry_write_callback writeCallback, uint32_t channels, uint32_t sampleRate, uint64_t bufferSize, uint64_t periodSize, void* userData) {
     snd_pcm_t* pcm;
     snd_pcm_hw_params_t* params;
-    DryadAudioStream* audioStream;
+    dry_audio_stream* audioStream;
 
     snd_pcm_open(&pcm, "default", SND_PCM_STREAM_PLAYBACK, 0);
 
@@ -52,7 +52,7 @@ DryadAudioStream* DryadCreateAudioStream(DryadWriteCallback writeCallback, uint3
     snd_pcm_hw_params(pcm, params);
     snd_pcm_hw_params_free(params);
 
-    audioStream = malloc(sizeof(DryadAudioStream));
+    audioStream = malloc(sizeof(dry_audio_stream));
 
     audioStream->pcm = pcm;
     audioStream->writeCallback = writeCallback;
@@ -64,12 +64,12 @@ DryadAudioStream* DryadCreateAudioStream(DryadWriteCallback writeCallback, uint3
     audioStream->userData = userData;
     atomic_store(&audioStream->active, true);
 
-    pthread_create(&audioStream->thread, NULL, audioLoop, audioStream);
+    pthread_create(&audioStream->thread, NULL, dry_audio_loop, audioStream);
 
     return audioStream;
 }
 
-void DryadCloseAudioStream(DryadAudioStream* audioStream) {
+void dry_close_audio_stream(dry_audio_stream* audioStream) {
     atomic_store(&audioStream->active, false);
 
     pthread_join(audioStream->thread, NULL);
