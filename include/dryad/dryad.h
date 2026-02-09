@@ -42,7 +42,7 @@ extern "C" {
 #endif
 
 dry_audio_stream* dry_create_audio_stream(dry_write_callback writeCallback, uint32_t channels, uint32_t sampleRate, uint64_t bufferSize, uint64_t periodSize, void* userData);
-void DryadCloseAudioStream(dry_audio_stream* audioStream);
+void dry_close_audio_stream(dry_audio_stream* audioStream);
 
 #ifdef __cplusplus
 }
