@@ -5,11 +5,17 @@ LIB_NAME = libdryad.a
 INC_DIRS = include
 INC_FLAGS = $(addprefix -I,$(INC_DIRS))
 
-PKGS = alsa
+PKGS =
+
+BACKEND ?= ALSA
+
+ifeq ($(BACKEND),ALSA)
+    CFLAGS += -DDRYAD_ALSA
+    PKGS += alsa
+endif
+
 PKG_CFLAGS = $(shell pkg-config --cflags $(PKGS))
 PKG_LIBS   = $(shell pkg-config --libs $(PKGS))
-
-ALL_CFLAGS = $(CFLAGS) $(PKG_CFLAGS) $(INC_FLAGS)
 
 SRCS = $(shell find src -name "*.c")
 OBJS = $(SRCS:%.c=build/%.o)
@@ -26,7 +32,7 @@ $(LIB_NAME): $(OBJS)
 build/%.o: %.c
 	@mkdir -p $(dir $@)
 	@echo "CC $<"
-	@$(CC) $(ALL_CFLAGS) -MMD -MP -c $< -o $@
+	@$(CC) $(CFLAGS) $(PKG_CFLAGS) $(INC_FLAGS) -MMD -MP -c $< -o $@
 
 clean:
 	@echo "Cleaning..."
