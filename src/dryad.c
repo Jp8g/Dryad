@@ -1,5 +1,4 @@
 #include <dryad/dryad.h>
-#include <string.h>
 
 #ifdef DRYAD_ALSA
 void* dry_audio_loop(void* args) {

@@ -2,15 +2,15 @@ CC = gcc
 CFLAGS = -std=c99 -Wall -Wextra -O3 -fPIC
 LIB_NAME = libdryad.a
 
-INC = -Iinclude
+INC_FLAGS = -Iinclude -Iexternal
 
 PKGS = alsa
 PKG_CFLAGS = $(shell pkg-config --cflags $(PKGS))
 PKG_LIBS   = $(shell pkg-config --libs $(PKGS))
 
-ALL_CFLAGS = $(CFLAGS) $(INC) $(PKG_CFLAGS)
+ALL_CFLAGS = $(CFLAGS) $(INC_FLAGS) $(PKG_CFLAGS)
 
-SRCS = src/dryad.c
+SRCS = $(shell find src -name "*.c")
 
 OBJS = $(SRCS:%.c=build/%.o)
 
@@ -28,4 +28,7 @@ build/%.o: %.c
 clean:
 	rm -rf build $(LIB_NAME)
 
-.PHONY: all clean
+print-pkgs:
+	@echo $(PKGS)
+
+.PHONY: all clean print-pkgs
