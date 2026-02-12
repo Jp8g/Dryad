@@ -14,21 +14,29 @@
 #endif
 
 typedef struct dry_audio_stream dry_audio_stream;
-
 typedef void (*dry_write_callback)(float*, dry_audio_stream*);
 
-typedef snd_pcm_t dry_pcm;
+#define DRYAD_ALSA
+
+typedef struct dry_internal {
+
+#ifdef DRYAD_ALSA
+    snd_pcm_t* pcm;
+#endif
+    
+} dry_internal;
 
 struct dry_audio_stream {
-    dry_pcm* pcm;
+    dry_internal* internal;
+    
+    pthread_t thread;
     dry_write_callback writeCallback;
+    void* userData;
+
     uint64_t bufferSize;
     uint64_t periodSize;
-    void* userData;
-    pthread_t thread;
-
-    uint32_t channels;
     uint32_t sampleRate;
+    uint32_t channels;
 
     #ifdef __cplusplus
     std::atomic<bool> active;

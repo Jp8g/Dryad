@@ -1,32 +1,35 @@
 #include <dryad/dryad.h>
+#include <string.h>
 
+#ifdef DRYAD_ALSA
 void* dry_audio_loop(void* args) {
     dry_audio_stream* audioStream = (dry_audio_stream*)args;
+    dry_internal internal = *audioStream->internal;
     float* outBuffer = malloc(audioStream->periodSize * audioStream->channels * sizeof(float));
 
     while (atomic_load(&audioStream->active)) {
-        snd_pcm_sframes_t avail = snd_pcm_avail_update((snd_pcm_t*)audioStream->pcm);
+        snd_pcm_sframes_t avail = snd_pcm_avail_update(internal.pcm);
 
         if (avail < 0) {
-            snd_pcm_prepare((snd_pcm_t*)audioStream->pcm);
+            snd_pcm_prepare(internal.pcm);
             continue;
         }
 
-        if (avail >= 0 && (uint64_t)avail >= audioStream->periodSize) {
-            for (uint32_t i = 0; i < audioStream->periodSize * audioStream->channels; i++) outBuffer[i] = 0.0f;
+        if ((uint64_t)avail >= audioStream->periodSize) {
+            memset(outBuffer, 0, audioStream->periodSize * audioStream->channels * sizeof(float));
 
             audioStream->writeCallback(outBuffer, audioStream);
 
-            snd_pcm_sframes_t written = snd_pcm_writei((snd_pcm_t*)audioStream->pcm, outBuffer, audioStream->periodSize);
+            snd_pcm_sframes_t written = snd_pcm_writei(internal.pcm, outBuffer, audioStream->periodSize);
 
             if (written < 0) {
-                written = snd_pcm_recover((snd_pcm_t*)audioStream->pcm, written, 0);
+                written = snd_pcm_recover(internal.pcm, written, 0);
             }
 
             continue;
         }
         
-        snd_pcm_wait(audioStream->pcm, 50);
+        snd_pcm_wait(internal.pcm, (audioStream->periodSize * 1000 * 2) / audioStream->sampleRate);
     }
 
     free(outBuffer);
@@ -54,7 +57,7 @@ dry_audio_stream* dry_create_audio_stream(dry_write_callback writeCallback, uint
 
     audioStream = malloc(sizeof(dry_audio_stream));
 
-    audioStream->pcm = pcm;
+    audioStream->internal->pcm = pcm;
     audioStream->writeCallback = writeCallback;
 
     audioStream->channels = channels;
@@ -74,6 +77,7 @@ void dry_close_audio_stream(dry_audio_stream* audioStream) {
 
     pthread_join(audioStream->thread, NULL);
 
-    snd_pcm_close(audioStream->pcm);
+    snd_pcm_close(audioStream->internal->pcm);
     free(audioStream);
 }
+#endif
