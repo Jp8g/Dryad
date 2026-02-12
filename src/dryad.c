@@ -56,6 +56,7 @@ dry_audio_stream* dry_create_audio_stream(dry_write_callback writeCallback, uint
     snd_pcm_hw_params_free(params);
 
     audioStream = malloc(sizeof(dry_audio_stream));
+    audioStream->internal = malloc(sizeof(dry_internal));
 
     audioStream->internal->pcm = pcm;
     audioStream->writeCallback = writeCallback;
