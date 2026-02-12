@@ -16,14 +16,12 @@
 typedef struct dry_audio_stream dry_audio_stream;
 typedef void (*dry_write_callback)(float*, dry_audio_stream*);
 
-#define DRYAD_ALSA
-
 typedef struct dry_internal {
 
 #ifdef DRYAD_ALSA
     snd_pcm_t* pcm;
 #endif
-    
+
 } dry_internal;
 
 struct dry_audio_stream {
