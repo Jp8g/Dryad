@@ -8,13 +8,16 @@
       "-Wextra",
       "-O3",
       "-fPIC",
+      "-DDRYAD_ALSA",
       "-Iinclude",
+      "-MMD",
+      "-MP",
       "-c",
       "src/dryad.c",
       "-o",
       "build/src/dryad.o"
     ],
-    "directory": "/home/hezzy/Projects/Dryad",
+    "directory": "/home/jpeg/Projects/Dryad",
     "output": "build/src/dryad.o"
   }
 ]
